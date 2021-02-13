@@ -1,26 +1,32 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public Interactable focus;
+
+    private float radius = 3f;
+
     public float moveSpeed = 0;
     public float gravity = -9.81f;
     public float jumpHeight = 3f;
 
-
+    public Camera cam;
     private CharacterController controller;
 
     Vector3 velocity;
 
     public Transform groundCheck;
-    public float groundDistance = 0.4f;
+    public float groundDistance = 0.1f;
     public LayerMask grountMask;
 
     bool isGrounded;
 
     void Start()
     {
+        //cam = GetComponent<Camera>();
         controller = GetComponent<CharacterController>();
     }
 
@@ -55,5 +61,44 @@ public class PlayerMovement : MonoBehaviour
 
         controller.Move(velocity * Time.deltaTime);
         
+
+        if (Input.GetKeyDown(KeyCode.F))
+        //if (Input.GetMouseButtonDown(1))
+        {
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if(Physics.Raycast(ray, out hit, radius))
+            {
+                Interactable interactable = hit.collider.GetComponent<Interactable>();
+                if (interactable != null)
+                {
+                    SetFocus(interactable);
+                }
+            }
+
+            
+        }
+
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(cam.transform.position, radius);
+    }
+
+    void SetFocus(Interactable newFocus)
+    {
+        
+        // Set our focus to what we hit
+        // If it's not an interactable, simply set it to null
+        focus = newFocus;
+
+        if (focus != null)
+        {
+            // Let our focus know that it's being focused
+            focus.OnFocused(transform);
+        }
     }
 }
